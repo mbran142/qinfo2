@@ -1,6 +1,8 @@
 import sys
 import os
 
+last_password = ''
+
 def main():
 
     # TODO: make it so if no arguments are provided, the program asks for a directory

@@ -1,29 +1,47 @@
-# add imports
+# several lines taken / motivated from Keith's answer from
+# https://stackoverflow.com/questions/20852664/python-pycrypto-encrypt-decrypt-text-files-with-aes
 
-def encrypt_file(filename, key):
+from Crypto.Cipher import AES
+from Crypto import Random
+from json import dumps, loads
+from main import last_password
+
+def encrypt_file(filename, data, key):
     """
     Encrypts a file given a key.
 
     Arguments:
     filename -- string containing file (including path) to encrypt
-    key -- plaintext key used used to generate a sha256 key for (symmetric) encryption of file
+    data -- file data (string)
+    key -- plaintext key used used to generate a AES key for (symmetric) encryption of file
 
     Returns: None
     """
-    pass
+    data = pad(str.encode(data))    # convert data into padded bytes
+
+    # encrypt data
+    iv = Random.new().read(AES.block_size)
+    cipher = AES.new(key + filename, AES.MODE_CBC, iv)
+    enc = iv + cipher.encrypt(data)
+
+    # save data
+    with open(filename + '.qf2', 'wb') as f:
+        f.write(enc)
 
 
-def encrypt_filesystem(dirname, key):
+def encrypt_filesystem(dirname, data, key):
     """
     Decrypts a filesystem given a key.
 
     Arguments:
-    dirname -- string containing directory (including path) to decrypt.
-    key -- plaintext key used used to generate a sha256 key for (symmetric) decryption of file
+    dirname -- string containing directory (including path) to encrypt.
+    data -- filesystem json
+    key -- plaintext key used used to generate a AES key for (symmetric) decryption of file
 
     Returns: None
     """
-    pass
+    data = dumps(data)
+    encrypt_file(dirname + '/root.qf2', data, key)
 
 
 def decrypt_file(filename, key):
@@ -32,11 +50,20 @@ def decrypt_file(filename, key):
 
     Arguments:
     filename -- string containing file (including path) to decrypt
-    key -- plaintext key used used to generate a sha256 key for (symmetric) decryption of file
+    key -- plaintext key used used to generate a AES key for (symmetric) decryption of file
 
     Returns: Decrypted bytes of file given key. Does not check ascii validity
     """
-    pass
+    # load ciphertext
+    with open(filename + '.qf2', 'wb') as f:
+        ciphertext = f.read()
+
+    # decrypt file
+    iv = ciphertext[:AES.block_size]
+    cipher = AES.new(key + filename, AES.MODE_CBC, iv)
+    plaintext = cipher.decrypt(ciphertext[AES.block_size:])
+
+    return bytes.decode(plaintext.rstrip(b"\0"))
 
 
 def decrypt_filesystem(dirname, key):
@@ -45,11 +72,12 @@ def decrypt_filesystem(dirname, key):
 
     Arguments:
     dirname -- string containing directory (including path) to decrypt.
-    key -- plaintext key used used to generate a sha256 key for (symmetric) decryption of file
+    key -- plaintext key used used to generate a AES key for (symmetric) decryption of file
 
     Returns: JSON object containing filesystem information
     """
-    pass
+    plaintext = decrypt_file(dirname + '/root.qf2', key)
+    return loads(plaintext)
 
 
 def change_password(new_pass):
@@ -61,4 +89,10 @@ def change_password(new_pass):
 
     Returns: None
     """
+    # TODO: implement this (add some confirmation process)
     pass
+
+
+def pad(s):
+    """Pads byte string with 0s"""
+    return s + b'\0' * (AES.block_size - len(s) % AES.block_size)
