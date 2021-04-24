@@ -3,6 +3,10 @@
 # add some global JSON object here
 # also some stack to keep track of directory location
 
+# Rember:
+# - double-check that directories and stuff (like root.qf2) exists before calling security.py functions
+# - strip all '.qf2' tags from inputs to security.py functions
+
 def main_user_loop(filesystem):
     """
     Main user interface loop. Commands are:
