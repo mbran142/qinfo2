@@ -26,7 +26,7 @@ json_dict = { 'root' : {
 
 encrypt_filesystem('data/test', json_dict, 'key')
 
-dec_json = decrypt_filesystem('data/test', 'key')
+dec_json = decrypt_filesystem('data/test', 'key2')
 
 dec_json_str = json.dumps(dec_json, indent=4)
 

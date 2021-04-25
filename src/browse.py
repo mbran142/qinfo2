@@ -1,4 +1,5 @@
-# add imports
+import json
+import re
 
 # add some global JSON object here
 # also some stack to keep track of directory location
@@ -7,7 +8,7 @@
 # - double-check that directories and stuff (like root.qf2) exists before calling security.py functions
 # - strip all '.qf2' tags from inputs to security.py functions
 
-def main_user_loop(filesystem):
+def main_user_loop(filesystem, password):
     """
     Main user interface loop. Commands are:
     - up:        Go up one directory layer (i.e., 'cd ..')
@@ -16,6 +17,7 @@ def main_user_loop(filesystem):
     - get _:     Decrypt and print selected file (no qf2 tag needed)
     - newfile _: Create new file with selected name
     - newdir _:  Create new directory with selected name
+    - exit:      Exit porgram
     - help:      Show these commands
 
     Arguments:
@@ -23,8 +25,71 @@ def main_user_loop(filesystem):
 
     Returns: None
     """
-    pass
+    done = False
+    list_dir = True
+    dir_stack = []
+    cur_dir = filesystem
 
+    while not done:
+
+        if list_dir:
+            list_directory(cur_dir)
+
+        list_dir = False
+        bad_input = False
+        
+        # requesting user input
+        user_input = input('> ')
+
+        # parse input
+        user_input = user_input.split()
+
+        if len(user_input) == 0:
+            bad_input = True
+
+        # find command
+        elif user_input[0] == 'up':
+            pass
+
+        elif user_input[0] == 'down':
+            pass
+
+        elif user_input[0] == 'list':
+            pass
+
+        elif user_input[0] == 'get':
+            pass
+
+        elif user_input[0] == 'newfile':
+            pass
+
+        elif user_input[0] == 'newdir':
+            pass
+
+        elif user_input[0] == 'exit':
+            pass
+
+        elif user_input[0] == 'help':
+            pass
+
+        else:
+            bad_input = True
+
+        # print error if command not recognized
+        if bad_input:
+            print('Error: Command not recognized.')
+
+    dec_json_str = json.dumps(cur_dir, indent=4)
+
+    print(dec_json_str)
+
+
+    # control flow
+    # - print contents of wd
+    # - print '>' to imply command input
+    # - get command
+    # - parse command
+    # - map command to one of the above options, or print error
 
 def process_user_input(input):
     """
@@ -47,7 +112,27 @@ def list_directory(dir):
 
     Returns: None
     """
-    pass
+    # empty flag
+    if len(dir) == 0:
+        print('{{Empty}}')
+        return
+
+    # print contents
+    for name, item in dir.items():
+        
+        if isinstance(item, dict):
+            print(f'[{name}]')
+        else:
+            print(name)
+
+    # TODO: make this printing more pretty.
+    # - maybe add sizes of each dir.
+    # - make the printing a grid system (check if i'm able to know console size)
+    # - make the character limit ~20 for each thing printed. if this is exceeded, append '...' to the first 17 chars of the item
+    # - if there are more than ~100 items in the directory, print the distribution of letters and ask for a starting letter or something
+    #       - with this ^, entering in nothing will just print everything
+    #       - add a 'summary = False' argument if I need to just print a summary of the dir based on the directory being
+    #         automatically printed due to a directory change
 
 
 def display_file(filename):
