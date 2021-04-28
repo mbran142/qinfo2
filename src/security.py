@@ -6,6 +6,8 @@ import hashlib
 from Crypto.Cipher import AES
 from Crypto import Random
 from json import dumps, loads
+from time import time
+from base64 import b64encode
 
 def encrypt_file(filename, data, key):
     """
@@ -111,3 +113,17 @@ def change_password(new_pass):
 def pad(s):
     """Pads byte string with 0s"""
     return s + b'\0' * (AES.block_size - len(s) % AES.block_size)
+
+
+def get_file_hash(filename):
+    """
+    Creates a hashed filename. Uses the current system time and filename.
+
+    Arguments
+    filename -- Name of file to get hash of
+
+    Returns: 20 digits of base64 encoded hash, along with a '.qf2' file tag.
+    """
+    time_string = str(time()).encode('utf-8')
+    dig = hashlib.sha1(time_string).digest()
+    return bytes.decode(b64encode(dig)[:20]) + '.qf2'

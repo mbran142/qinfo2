@@ -1,6 +1,6 @@
 import sys
 import os
-import time
+from time import sleep
 import json
 from getpass import getpass
 from security import decrypt_filesystem, encrypt_filesystem
@@ -50,7 +50,7 @@ def main():
     if len(sys.argv) < 2:
         sel_dir = input("Select directory: ")
     else:
-        sel_dir = sys.argv[1]
+        sel_dir = sys.argv[1].strip('/')
 
     # check given directory is exists and has 'root.qf2' file
     if not os.path.isdir(f'data/{sel_dir}'):
@@ -68,7 +68,7 @@ def main():
         filesystem = decrypt_filesystem('data/' + sel_dir, password)
 
         if filesystem is None:
-            time.sleep(3)
+            sleep(3)
             attempts += 1
             print('Incorrect.')
         else:
@@ -76,7 +76,7 @@ def main():
 
     # enter main ui loop if pass is correct
     if attempts != 5:
-        main_user_loop(filesystem, password)
+        main_user_loop('data/' + sel_dir, filesystem, password)
     else:
         print('Too many incorrect entries. The program will now exit.')
         exit(1)
