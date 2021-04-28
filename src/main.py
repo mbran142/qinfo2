@@ -16,7 +16,7 @@ def create_new_filesystem(dirname, password):
 
     # create directory and save empty filesystem into it
     os.mkdir(f'data/{dirname}')
-    encrypt_filesystem(f'data/{dirname}', json.dumps({}), password)
+    encrypt_filesystem(f'data/{dirname}', {}, password)
     return True
 
 

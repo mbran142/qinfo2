@@ -9,6 +9,8 @@ from json import dumps, loads
 from time import time
 from base64 import b64encode
 
+import pdb
+
 def encrypt_file(filename, data, key):
     """
     Encrypts a file given a key.
@@ -94,7 +96,7 @@ def decrypt_filesystem(dirname, key):
     if plaintext is None or plaintext[:32] != '\0' * 32:
         return None
 
-    return loads(plaintext[32:])
+    return loads(plaintext[32:0])
 
 
 def change_password(new_pass):
