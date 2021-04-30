@@ -44,6 +44,7 @@ def main_user_loop(location, filesystem, password):
     modified = False
     list_dir = 1        # 0 = nothing printed, 1 = small print, 2 = entire print
     cur_dir = filesystem
+    debug = False
 
     print('Filesystem loaded. Enter \'help\' to see command list.')
 
@@ -58,7 +59,8 @@ def main_user_loop(location, filesystem, password):
         # requesting user input
         user_input = input('> ')
 
-        pdb.set_trace()
+        if debug:
+            pdb.set_trace()
 
         # parse input
         user_input = user_input.split()
@@ -71,18 +73,18 @@ def main_user_loop(location, filesystem, password):
 
             if user_input[0] == 'up':
                 error = up_directory()
-                list_dir = 0 if error is None else 1
+                list_dir = 1 if error is None else 0
 
             elif user_input[0] == 'down':
                 error = down_directory(user_input)
-                list_dir = 0 if error is None else 1
+                list_dir = 1 if error is None else 0
 
             elif user_input[0] == 'list':
                 # set print flag to detailed
                 list_dir = 2
 
             elif user_input[0] == 'get':
-                error, temp_mod = file_to_clipboard(user_input, password)
+                error, temp_mod = file_to_clipboard(user_input, location, password)
                 if temp_mod:
                     modified = True
 
@@ -118,6 +120,9 @@ def main_user_loop(location, filesystem, password):
 
             elif user_input[0] == 'help':
                 print_help()
+
+            elif user_input[0] == 'debug':
+                debug = not debug
 
             else:
                 error = 'Command not recognized'
@@ -187,16 +192,16 @@ def list_directory(dir, val):
     """
     # empty flag
     if len(dir) == 0:
-        print('{{Empty}}')
+        print('* EMPTY *')
         return
 
     # print contents
     for name, item in dir.items():
         
         if isinstance(item, dict):
-            print(f'[{name}]')
+            print(f' + [{name}]:[{len(item)}]')
         else:
-            print(name)
+            print(' - ' + name)
 
     # TODO: make this printing more pretty.
     # - maybe add sizes of each dir.
@@ -207,9 +212,9 @@ def list_directory(dir, val):
     #       - add a 'summary = False' argument if I need to just print a summary of the dir based on the directory being
     #         automatically printed due to a directory change
     # - also change the '{{Empty}}' to something better lol
+    # - print contents in alphabetical order
 
-
-def file_to_clipboard(user_input, password):
+def file_to_clipboard(user_input, location, password):
     """
     Copied a file entry to clipboard
 
@@ -233,18 +238,18 @@ def file_to_clipboard(user_input, password):
         return (f"'{user_input[1]}' is a directory (should be a file).", False)
 
     # check the file actually exists. Remove file from filesystem if this is the case
-    if not os.path.isfile(cur_dir[user_input[1]]):
+    if not os.path.isfile(location + '/' + cur_dir[user_input[1]]):
         del cur_dir[user_input[1]]
         return (f"No file corresponding to '{user_input[1]}'. This entry has been removed.", True)
 
     # try and decrypt file
     print(f"Loading entry '{user_input[1]}'... ", end='')
-    file_data = decrypt_file(cur_dir[user_input[1]], password)
+    file_data = decrypt_file(location + '/' + cur_dir[user_input[1]][:-4], password)
 
     # error in decryption
     if file_data is None:
         print()
-        return 'Error in decryption.'
+        return ('Decryption failed. File may be corrupted.', False)
 
     # use pandas.DataFrame to copy data to clipboard
     df = DataFrame([file_data])            
@@ -295,6 +300,10 @@ def create_new_file(user_input, location, password):
 
         # TODO: make this verification a loop (until either y/n is entered)
 
+        # check for empty entry
+        if file_data == '':
+            return 'File must contain at least one line.'
+
         # verify entry
         user_input = input(f'Verify entry [Y/n] > ')
 
@@ -307,16 +316,23 @@ def create_new_file(user_input, location, password):
         # TODO: ask for filename (and give specific directory where it should appear)
 
         # look for expected file
-        new_filename = f'{location}/{new_filename}.qf2'
-        print(f"Looking for file '{new_filename}'...")
+        new_filepath = f'{location}/{new_filename}.qf2'
+        print(f"Looking for file '{new_filepath}'...")
         
-        if not os.path.isfile(new_filename):
+        if not os.path.isfile(new_filepath):
             return 'Input file not found.'
     
         print('File found. Encrypting file...')
-        with open(new_filename, 'r') as f:
+        with open(new_filepath, 'r') as f:
             file_data = f.read()
-        os.remove(new_filename)
+
+        # check for empty file
+        if file_data == '':
+            return 'File must contain at least one line.'
+
+        os.remove(new_filepath)
+
+    pdb.set_trace()
     
     # insert encoded filename into filesystem
     encoded_filename = get_file_hash(new_filename)
@@ -327,11 +343,11 @@ def create_new_file(user_input, location, password):
         print('Woah!')
         encoded_filename = get_file_hash(new_filename)
 
-    cur_dir[new_filename] = encoded_filename
+    cur_dir[new_filename] = encoded_filename + '.qf2'
 
     # build and encrypt file
     encrypt_file(location + '/' + encoded_filename, file_data, password)
-    print(f"New file successfully created with encoding '{encoded_filename}'")
+    print(f"New file successfully created with encoding '{encoded_filename}.qf2'")
 
     return None
 
@@ -424,7 +440,9 @@ def delete_directory(user_input):
         return f"'{user_input[1]}' is not an empty directory. Please remove its contents first."
 
     # success
+    print(f"Directory '{user_input[1]}' has been deleted.")
     del cur_dir[user_input[1]]
+    
     return None
 
 

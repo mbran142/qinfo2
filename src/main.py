@@ -6,6 +6,7 @@ from getpass import getpass
 from security import decrypt_filesystem, encrypt_filesystem
 from browse import main_user_loop
 
+import pdb
 
 def create_new_filesystem(dirname, password):
     '''Creates a new filesystem. Returns False if an error occurs.'''
@@ -22,7 +23,7 @@ def create_new_filesystem(dirname, password):
 
 def main():
     '''Entry point of program. Handles authentication and directs control flow elsewhere.'''
-
+        
     # check if '-n' argument is provided, if yes create new filesystem directory
     if len(sys.argv) == 3 and sys.argv[1] == '-n':
 

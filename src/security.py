@@ -62,22 +62,24 @@ def decrypt_file(filename, key):
 
     Returns: Decrypted string of file given key. Returns None is decode fails
     """
-    # load ciphertext
-    with open(filename + '.qf2', 'rb') as f:
-        ciphertext = f.read()
-
-    # get key
-    digest = hmac.new(str.encode(key + filename), digestmod=hashlib.sha256).digest()
-
-    # decrypt file
-    iv = ciphertext[:AES.block_size]
-    cipher = AES.new(digest, AES.MODE_CBC, iv)
-    plaintext = cipher.decrypt(ciphertext[AES.block_size:])
-
-    # return None is decode fails
     try:
+        # load ciphertext
+        with open(filename + '.qf2', 'rb') as f:
+            ciphertext = f.read()
+
+        # get key
+        digest = hmac.new(str.encode(key + filename), digestmod=hashlib.sha256).digest()
+
+        # decrypt file
+        iv = ciphertext[:AES.block_size]
+        cipher = AES.new(digest, AES.MODE_CBC, iv)
+        plaintext = cipher.decrypt(ciphertext[AES.block_size:])
+
         return bytes.decode(plaintext.rstrip(b"\0"))
+
     except Exception:
+        
+        # return None is decode fails for whatever reason
         return None
 
 
@@ -96,7 +98,7 @@ def decrypt_filesystem(dirname, key):
     if plaintext is None or plaintext[:32] != '\0' * 32:
         return None
 
-    return loads(plaintext[32:0])
+    return loads(plaintext[32:])
 
 
 def change_password(new_pass):
@@ -124,8 +126,8 @@ def get_file_hash(filename):
     Arguments
     filename -- Name of file to get hash of
 
-    Returns: 20 digits of base64 encoded hash, along with a '.qf2' file tag.
+    Returns: 20 digits of base64 encoded hash. Note '/' is replaced with '_'.
     """
     time_string = str(time()).encode('utf-8')
     dig = hashlib.sha1(time_string).digest()
-    return bytes.decode(b64encode(dig)[:20]) + '.qf2'
+    return bytes.decode(b64encode(dig)[:20]).replace('/', '_')
