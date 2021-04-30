@@ -6,8 +6,6 @@ from getpass import getpass
 from security import decrypt_filesystem, encrypt_filesystem
 from browse import main_user_loop
 
-import pdb
-
 def create_new_filesystem(dirname, password):
     '''Creates a new filesystem. Returns False if an error occurs.'''
 

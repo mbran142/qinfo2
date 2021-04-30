@@ -4,8 +4,6 @@ import os
 from pandas import DataFrame    # for clipboard access
 from security import decrypt_file, encrypt_file, encrypt_filesystem, get_file_hash
 
-import pdb
-
 # add some global JSON object here
 # also some stack to keep track of directory location
 
@@ -44,7 +42,6 @@ def main_user_loop(location, filesystem, password):
     modified = False
     list_dir = 1        # 0 = nothing printed, 1 = small print, 2 = entire print
     cur_dir = filesystem
-    debug = False
 
     print('Filesystem loaded. Enter \'help\' to see command list.')
 
@@ -58,9 +55,6 @@ def main_user_loop(location, filesystem, password):
         
         # requesting user input
         user_input = input('> ')
-
-        if debug:
-            pdb.set_trace()
 
         # parse input
         user_input = user_input.split()
@@ -120,9 +114,6 @@ def main_user_loop(location, filesystem, password):
 
             elif user_input[0] == 'help':
                 print_help()
-
-            elif user_input[0] == 'debug':
-                debug = not debug
 
             else:
                 error = 'Command not recognized'
@@ -331,8 +322,6 @@ def create_new_file(user_input, location, password):
             return 'File must contain at least one line.'
 
         os.remove(new_filepath)
-
-    pdb.set_trace()
     
     # insert encoded filename into filesystem
     encoded_filename = get_file_hash(new_filename)

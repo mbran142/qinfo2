@@ -9,8 +9,6 @@ from json import dumps, loads
 from time import time
 from base64 import b64encode
 
-import pdb
-
 def encrypt_file(filename, data, key):
     """
     Encrypts a file given a key.
